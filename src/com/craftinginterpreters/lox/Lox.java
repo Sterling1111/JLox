@@ -10,6 +10,12 @@ import java.util.List;
 
 public class Lox {
     static boolean hadError = false;
+    static boolean hadRuntimeError = false;
+
+    public static final String RED = "\u001B[31m";
+    public static final String RESET = "\u001B[0m";
+
+    private static final Interpreter interpreter = new Interpreter();
 
     public static void main(String[] args) throws IOException {
         if(args.length > 1) {
@@ -27,6 +33,7 @@ public class Lox {
         run(new String(bytes, Charset.defaultCharset()));
 
         if(hadError) System.exit(65);
+        if(hadRuntimeError) System.exit(70);
     }
 
     private static void runPrompt() throws IOException {
@@ -47,11 +54,11 @@ public class Lox {
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
         Parser parser = new Parser(tokens);
-        Expr expression = parser.parse();
+        Expr expr = parser.parse();
 
         if(hadError) return;
-
-        System.out.println(new AstPrinter().print(expression));
+        interpreter.interpret(expr);
+        //System.out.println(new AstPrinter().print(expr));
     }
 
     static void error(int line, String message) {
@@ -59,7 +66,7 @@ public class Lox {
     }
 
     private static void report(int line, String where, String message) {
-        System.err.println("[line " + line + "] Error" + where + ": " + message);
+        System.out.println(RED + "[line " + line + "] Error" + where + ": " + message + RESET);
         hadError = true;
     }
 
@@ -69,5 +76,10 @@ public class Lox {
         } else {
             report(token.line, " at '" + token.lexeme + "'", message);
         }
+    }
+
+    static void runtimeError(RuntimeError error) {
+        System.out.println(RED + error.getMessage() + "\n[line " + error.token.line + "]" + RESET);
+        hadRuntimeError = true;
     }
 }
