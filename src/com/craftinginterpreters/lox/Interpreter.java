@@ -1,8 +1,35 @@
 package com.craftinginterpreters.lox;
 
-public class Interpreter implements Expr.Visitor<Object> {
+import java.util.List;
+
+public class Interpreter implements Expr.Visitor<Object>,
+                                    Stmt.Visitor<Void> {
+
+    private Environment environment = new Environment();
+
+    void interpret(List<Stmt> statements) {
+        try {
+            for(Stmt statement : statements) {
+                execute(statement);
+            }
+        } catch (RuntimeError error) {
+            Lox.runtimeError(error);
+        }
+    }
+
+    private void execute(Stmt stmt) {
+        stmt.accept(this);
+    }
+
     private Object evaluate(Expr expr) {
         return expr.accept(this);
+    }
+
+    @Override
+    public Object visitAssignExpr(Expr.Assign expr) {
+        Object value = evaluate(expr.value);
+        environment.assign(expr.name, value);
+        return value;
     }
 
     @Override
@@ -71,6 +98,54 @@ public class Interpreter implements Expr.Visitor<Object> {
         return null;
     }
 
+    @Override
+    public Object visitVariableExpr(Expr.Variable expr) {
+        return environment.get(expr.name);
+    }
+
+    @Override
+    public Void visitExpressionStmt(Stmt.Expression stmt) {
+        System.out.println(stringify(evaluate(stmt.expression)));
+        return null;
+    }
+
+    @Override
+    public Void visitPrintStmt(Stmt.Print stmt) {
+        Object expr = evaluate(stmt.expression);
+        System.out.println(stringify(expr));
+        return null;
+    }
+
+    @Override
+    public Void visitVarStmt(Stmt.Var stmt) {
+        Object value = null;
+        if(stmt.initializer != null) {
+            value = evaluate(stmt.initializer);
+        }
+        environment.define(stmt.name.lexeme, value);
+        return null;
+    }
+
+    @Override
+    public Void visitBlockStmt(Stmt.Block stmt) {
+        executeBlock(stmt.statements);
+        return null;
+    }
+
+    void executeBlock(List<Stmt> statements) {
+        Environment outer = this.environment;
+        try {
+            this.environment = new Environment(outer);
+            for(Stmt statement : statements) {
+                execute(statement);
+            }
+        } catch (RuntimeError error) {
+            Lox.runtimeError(error);
+        } finally {
+            this.environment = outer;
+        }
+    }
+
     private void checkNumberOperand(Token operator, Object operand) {
         if(operand instanceof Double) return;
         throw new RuntimeError(operator, "Operand must be a number.");
@@ -93,15 +168,6 @@ public class Interpreter implements Expr.Visitor<Object> {
         if(obj instanceof Double) return (Double) obj != 0;
         if(obj instanceof String) return !((String) obj).equals("");
         return true;
-    }
-
-    void interpret(Expr expr) {
-        try {
-            Object value = evaluate(expr);
-            System.out.println(stringify(value));
-        } catch (RuntimeError error) {
-            Lox.runtimeError(error);
-        }
     }
 
     private String stringify(Object obj) {
