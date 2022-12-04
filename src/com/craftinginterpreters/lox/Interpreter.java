@@ -1,11 +1,32 @@
 package com.craftinginterpreters.lox;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Interpreter implements Expr.Visitor<Object>,
                                     Stmt.Visitor<Void> {
 
-    private Environment environment = new Environment();
+    final Environment globals = new Environment();
+    private Environment environment = globals;
+
+    public Interpreter() {
+        globals.define("clock", new LoxCallable() {
+            @Override
+            public int arity() {
+                return 0;
+            }
+
+            @Override
+            public Object call(Interpreter interpreter, List<Object> arguments) {
+                return (double) System.currentTimeMillis() / 1000;
+            }
+
+            @Override
+            public String toString() {
+                return "<native fn>";
+            }
+        });
+    }
 
     void interpret(List<Stmt> statements) {
         try {
@@ -33,6 +54,16 @@ public class Interpreter implements Expr.Visitor<Object>,
     }
 
     @Override
+    public Object visitLogicalExpr(Expr.Logical expr) {
+        boolean left = isTruthy(evaluate(expr.left));
+        return switch (expr.operator.type) {
+            case OR -> left || isTruthy(evaluate(expr.right));
+            case AND -> left && isTruthy(evaluate(expr.right));
+            default -> null;
+        };
+    }
+
+    @Override
     public Object visitBinaryExpr(Expr.Binary expr) {
         Object left = evaluate(expr.left);
         Object right = evaluate(expr.right);
@@ -55,6 +86,7 @@ public class Interpreter implements Expr.Visitor<Object>,
             case EQUAL_EQUAL:
                 return  isEqual(left, right);
             case MINUS:
+                checkNumberOperands(expr.operator, left, right);
                 return (double)left - (double)right;
             case SLASH:
                 checkNumberOperands(expr.operator, left, right);
@@ -88,14 +120,32 @@ public class Interpreter implements Expr.Visitor<Object>,
     public Object visitUnaryExpr(Expr.Unary expr) {
         Object right = evaluate(expr.right);
 
-        switch (expr.operator.type) {
-            case BANG:
-                return !isTruthy(right);
-            case MINUS:
-                return -(double) right;
+        return switch (expr.operator.type) {
+            case BANG -> !isTruthy(right);
+            case MINUS -> -(double) right;
+            default -> null;
+        };
+    }
 
+    @Override
+    public Object visitCallExpr(Expr.Call expr) {
+        Object callee = evaluate(expr.callee);
+
+        List<Object> arguments = new ArrayList<>();
+        for(Expr arg : expr.arguments) {
+            arguments.add(evaluate(arg));
         }
-        return null;
+
+        if(!(callee instanceof LoxCallable function)) {
+            throw new RuntimeError(expr.paren, "Can only call functions and classes.");
+        }
+
+        if(arguments.size() != function.arity()) {
+            throw new RuntimeError(expr.paren, "Expected " +
+                    function.arity() + " arguments but got " +
+                    arguments.size() + ".");
+        }
+        return function.call(this, arguments);
     }
 
     @Override
@@ -105,12 +155,20 @@ public class Interpreter implements Expr.Visitor<Object>,
 
     @Override
     public Void visitExpressionStmt(Stmt.Expression stmt) {
-        System.out.println(stringify(evaluate(stmt.expression)));
+        if(Lox.commandLine) return visitPrintStmt(new Stmt.Print(stmt.expression));
+        Object value = evaluate(stmt.expression);
         return null;
     }
 
     @Override
     public Void visitPrintStmt(Stmt.Print stmt) {
+        Object expr = evaluate(stmt.expression);
+        System.out.print(stringify(expr));
+        return null;
+    }
+
+    @Override
+    public Void visitPrintlnStmt(Stmt.Println stmt) {
         Object expr = evaluate(stmt.expression);
         System.out.println(stringify(expr));
         return null;
@@ -128,14 +186,39 @@ public class Interpreter implements Expr.Visitor<Object>,
 
     @Override
     public Void visitBlockStmt(Stmt.Block stmt) {
-        executeBlock(stmt.statements);
+        executeBlock(stmt.statements, new Environment(this.environment));
         return null;
     }
 
-    void executeBlock(List<Stmt> statements) {
+    @Override
+    public Void visitIfStmt(Stmt.If stmt) {
+        if(isTruthy(evaluate(stmt.condition))) {
+            execute(stmt.thenBranch);
+        } else if(stmt.elseBranch != null) {
+            execute(stmt.elseBranch);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitWhileStmt(Stmt.While stmt) {
+        while(isTruthy(evaluate(stmt.condition))) {
+            execute(stmt.body);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitFunctionStmt(Stmt.Function stmt) {
+        LoxFunction function = new LoxFunction(stmt);
+        environment.define(stmt.name.lexeme, function);
+        return null;
+    }
+
+    void executeBlock(List<Stmt> statements, Environment inner) {
         Environment outer = this.environment;
         try {
-            this.environment = new Environment(outer);
+            this.environment = inner;
             for(Stmt statement : statements) {
                 execute(statement);
             }

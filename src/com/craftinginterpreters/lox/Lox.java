@@ -1,8 +1,6 @@
 package com.craftinginterpreters.lox;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -12,6 +10,7 @@ import java.util.List;
 public class Lox {
     static boolean hadError = false;
     static boolean hadRuntimeError = false;
+    static boolean commandLine = false;
 
     public static final String RED = "\u001B[31m";
     public static final String RESET = "\u001B[0m";
@@ -23,7 +22,11 @@ public class Lox {
             System.out.println("Usage: jlox [script]");
             System.exit(64);
         } else if(args.length == 1) {
-            runFile(args[0]);
+            try {
+                runFile(args[0]);
+            } catch (IOException e) {
+                System.exit(69);
+            }
         } else {
             runPrompt();
         }
@@ -38,6 +41,7 @@ public class Lox {
     }
 
     private static void runPrompt() throws IOException {
+        commandLine = true;
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
 
