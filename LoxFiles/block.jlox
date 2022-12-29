@@ -1,11 +1,13 @@
-fun p() {
-    var a = 0;
-    for(var i = 0; i < 1000000; i = i+1) {
-        println a;
-        a = a+1;
+fun makeCounter() {
+    var i = 0;
+    fun count() {
+        i = i + 1;
+        println i;
     }
+
+    return count;
 }
 
-var now = clock();
-p();
-print clock() - now;
+var counter = makeCounter();
+counter();
+counter();

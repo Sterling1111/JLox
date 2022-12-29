@@ -32,6 +32,7 @@ public class GenerateAst {
                 "While      : Expr condition, Stmt body",
                 "Print      : Expr expression",
                 "Println    : Expr expression",
+                "Return     : Token keyword, Expr value",
                 "Var        : Token name, Expr initializer"
         ));
     }
