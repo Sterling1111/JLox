@@ -1,13 +1,11 @@
-fun makeCounter() {
-    var i = 0;
-    fun count() {
-        i = i + 1;
-        println i;
-    }
+var a = "global";
+a = "global2";
+{
+  fun showA() {
+    return a;
+  }
 
-    return count;
+  println showA();
+  var a = "block";
+  println showA();
 }
-
-var counter = makeCounter();
-counter();
-counter();
