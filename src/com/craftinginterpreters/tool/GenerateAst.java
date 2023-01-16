@@ -33,6 +33,7 @@ public class GenerateAst {
                 "Print      : Expr expression",
                 "Println    : Expr expression",
                 "Return     : Token keyword, Expr value",
+                "Break      : Token keyword",
                 "Var        : Token name, Expr initializer"
         ));
     }

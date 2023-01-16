@@ -118,6 +118,7 @@ public class Parser {
         if(match(PRINTLN)) return printlnStatement();
         if(match(RETURN)) return returnStatement();
         if(match(LEFT_BRACE)) return blockStatement();
+        if(match(BREAK)) return breakStatement();
         return expressionStatement();
     }
 
@@ -159,7 +160,7 @@ public class Parser {
         consume(SEMICOLON, "Expect ';' after loop condition.");
 
         Expr increment = null;
-        if(!check(SEMICOLON)) {
+        if(!check(RIGHT_PAREN)) {
             increment = expression();
         }
         consume(RIGHT_PAREN, "Expect ')' after for clause.");
@@ -213,6 +214,12 @@ public class Parser {
         }
         consume(SEMICOLON, "Expect ';' after return value.");
         return new Stmt.Return(keyword, value);
+    }
+
+    private Stmt breakStatement() {
+        Token keyword = previous();
+        consume(SEMICOLON, "Expect ';' after break.");
+        return new Stmt.Break(keyword);
     }
 
     private Stmt expressionStatement() {

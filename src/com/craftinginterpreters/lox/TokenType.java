@@ -14,7 +14,7 @@ public enum TokenType {
 
     //keywords
     AND, CLASS, ELSE, FALSE, FUN, FOR, IF, NIL,
-    OR, PRINT, PRINTLN, RETURN, SUPER, THIS, TRUE, VAR, WHILE,
+    OR, PRINT, PRINTLN, RETURN, SUPER, THIS, TRUE, VAR, WHILE, BREAK,
 
     EOF
 }

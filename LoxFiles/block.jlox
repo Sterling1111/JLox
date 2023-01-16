@@ -1,11 +1,6 @@
-var a = "global";
-a = "global2";
-{
-  fun showA() {
-    return a;
-  }
-
-  println showA();
-  var a = "block";
-  println showA();
+var b = 0;
+for(var i = 0; i < 50000000; i = i + 1) {
+    b = b + 1;
 }
+
+println "Suck my cock";

@@ -169,7 +169,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitWhileStmt(Stmt.While stmt) {
-        resolve(stmt.body);
+        resolve(stmt.condition);
         resolve(stmt.body);
         return null;
     }
@@ -193,6 +193,11 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
         }
         if(stmt.value != null)
             resolve(stmt.value);
+        return null;
+    }
+
+    @Override
+    public Void visitBreakStmt(Stmt.Break stmt) {
         return null;
     }
 

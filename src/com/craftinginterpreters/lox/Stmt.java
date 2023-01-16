@@ -12,6 +12,7 @@ abstract class Stmt {
 		R visitPrintStmt(Print stmt);
 		R visitPrintlnStmt(Println stmt);
 		R visitReturnStmt(Return stmt);
+		R visitBreakStmt(Break stmt);
 		R visitVarStmt(Var stmt);
 	}
 
@@ -121,6 +122,18 @@ abstract class Stmt {
 		}
 		final Token keyword;
 		final Expr value;
+	}
+
+	public static class Break extends Stmt {
+		Break(Token keyword) {
+			this.keyword = keyword;
+		}
+
+		@Override
+		<R> R accept(Visitor<R> visitor) {
+			 return visitor.visitBreakStmt(this);
+		}
+		final Token keyword;
 	}
 
 	public static class Var extends Stmt {
