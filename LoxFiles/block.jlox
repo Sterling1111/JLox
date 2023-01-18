@@ -1,6 +1,34 @@
-var b = 0;
-for(var i = 0; i < 50000000; i = i + 1) {
-    b = b + 1;
+class Cock {
+    append(elem) {
+        what right do you ahve
+    }
 }
 
-println "Suck my cock";
+var cock = Cock();
+var head = cock;
+
+for(var i = 0; i < 5; i = i + 1) {
+    cock.num = i;
+    cock.next = Cock();
+    cock.next.next = nil;
+    cock = cock.next;
+}
+
+var cock = head;
+
+fun getNum(n) {
+    var cock = head;
+    while(n != 0) {
+        cock = cock.next;
+        n = n - 1;
+    }
+    return cock.num;
+}
+
+while(cock.next != nil) {
+    println cock.num;
+    cock = cock.next;
+}
+
+println getNum(3);
+

@@ -11,6 +11,8 @@ abstract class Expr {
 		R visitLiteralExpr(Literal expr);
 		R visitUnaryExpr(Unary expr);
 		R visitCallExpr(Call expr);
+		R visitGetExpr(Get expr);
+		R visitSetExpr(Set expr);
 		R visitVariableExpr(Variable expr);
 	}
 
@@ -112,6 +114,36 @@ abstract class Expr {
 		final Expr callee;
 		final Token paren;
 		final List<Expr> arguments;
+	}
+
+	public static class Get extends Expr {
+		Get(Expr object, Token name) {
+			this.object = object;
+			this.name = name;
+		}
+
+		@Override
+		<R> R accept(Visitor<R> visitor) {
+			 return visitor.visitGetExpr(this);
+		}
+		final Expr object;
+		final Token name;
+	}
+
+	public static class Set extends Expr {
+		Set(Expr object, Token name, Expr value) {
+			this.object = object;
+			this.name = name;
+			this.value = value;
+		}
+
+		@Override
+		<R> R accept(Visitor<R> visitor) {
+			 return visitor.visitSetExpr(this);
+		}
+		final Expr object;
+		final Token name;
+		final Expr value;
 	}
 
 	public static class Variable extends Expr {
