@@ -28,6 +28,7 @@ public class Lox {
                 System.exit(69);
             }
         } else {
+            interpreter.commandLine = true;
             runPrompt();
         }
     }
@@ -68,7 +69,11 @@ public class Lox {
 
         if(hadError) return;
 
-        interpreter.interpret(statements);
+        try {
+            interpreter.interpret(statements);
+        } catch(RuntimeError error) {
+            runtimeError(error);
+        }
     }
 
     static void error(int line, String message) {

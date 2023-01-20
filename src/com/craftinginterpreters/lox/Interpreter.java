@@ -11,6 +11,7 @@ public class Interpreter implements Expr.Visitor<Object>,
     final Environment globals = new Environment();
     private Environment environment = globals;
     private final Map<Expr, Integer> locals = new HashMap<>();
+    public boolean commandLine = false;
 
     public Interpreter() {
         globals.define("clock", new LoxCallable() {
@@ -150,16 +151,20 @@ public class Interpreter implements Expr.Visitor<Object>,
             arguments.add(evaluate(arg));
         }
 
-        if(!(callee instanceof LoxCallable function)) {
+        if(!(callee instanceof LoxCallable callable)) {
             throw new RuntimeError(expr.paren, "Can only call functions and classes.");
         }
 
-        if(arguments.size() != function.arity()) {
+        if(callable instanceof LoxFunction) {
+            int dog = 3;
+        };
+
+        if(arguments.size() != callable.arity()) {
             throw new RuntimeError(expr.paren, "Expected " +
-                    function.arity() + " arguments but got " +
+                    callable.arity() + " arguments but got " +
                     arguments.size() + ".");
         }
-        return function.call(this, arguments);
+        return callable.call(this, arguments);
     }
 
     @Override
@@ -181,6 +186,11 @@ public class Interpreter implements Expr.Visitor<Object>,
             return value;
         }
         throw new RuntimeError(expr.name, "Only instances have fields.");
+    }
+
+    @Override
+    public Object visitThisExpr(Expr.This expr) {
+        return lookUpVariable(expr.keyword, expr);
     }
 
     @Override
@@ -252,7 +262,7 @@ public class Interpreter implements Expr.Visitor<Object>,
 
         Map<String, LoxFunction> methods = new HashMap<>();
         for(Stmt.Function method : stmt.methods) {
-            LoxFunction function = new LoxFunction(method, environment);
+            LoxFunction function = new LoxFunction(method, environment, method.name.lexeme.equals("init"));
             methods.put(method.name.lexeme, function);
         }
 
@@ -285,7 +295,7 @@ public class Interpreter implements Expr.Visitor<Object>,
 
     @Override
     public Void visitFunctionStmt(Stmt.Function stmt) {
-        LoxFunction function = new LoxFunction(stmt, environment);
+        LoxFunction function = new LoxFunction(stmt, environment, false);
         environment.define(stmt.name.lexeme, function);
         return null;
     }
@@ -298,6 +308,7 @@ public class Interpreter implements Expr.Visitor<Object>,
                 execute(statement);
             }
         } catch (RuntimeError error) {
+            if(!commandLine) throw error;
             Lox.runtimeError(error);
         } finally {
             this.environment = outer;

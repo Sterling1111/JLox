@@ -1,34 +1,116 @@
-class Cock {
-    append(elem) {
-        what right do you ahve
+class Node {
+    init(val) {
+        this.next = nil;
+        this.val = val;
     }
 }
 
-var cock = Cock();
-var head = cock;
-
-for(var i = 0; i < 5; i = i + 1) {
-    cock.num = i;
-    cock.next = Cock();
-    cock.next.next = nil;
-    cock = cock.next;
-}
-
-var cock = head;
-
-fun getNum(n) {
-    var cock = head;
-    while(n != 0) {
-        cock = cock.next;
-        n = n - 1;
+class List {
+    init() {
+        this.head = nil;
+        this.tail = nil;
+        this.size = 0;
     }
-    return cock.num;
+
+    add(val) {
+        var node = Node(val);
+        if(this.head == nil) {
+            this.head = node;
+            this.tail = node;
+        } else {
+            this.tail.next = node;
+            this.tail = this.tail.next;
+        }
+        this.size = this.size + 1;
+    }
+
+    get(index) {
+        if(index < 0 or index > this.size - 1) return;
+        var node = this.head;
+        while(index) {
+            node = node.next;
+            index = index - 1;
+        }
+        return node.val;
+    }
+
+    printList() {
+        var temp = this.head;
+        if(temp == nil) return;
+        while(temp != nil) {
+            print temp.val;
+            print " ";
+            temp = temp.next;
+        }
+        println "";
+    }
 }
 
-while(cock.next != nil) {
-    println cock.num;
-    cock = cock.next;
+var list = List();
+list.init();
+list.add(1);
+list.add(2);
+list.add(3);
+list.add(4);
+list.printList();
+list.printList();
+
+for(var i = 0; i < list.size; i = i + 1) {
+    var val = list.get(i);
+    if(val == nil) println "Error: not a valid index.";
+    else  {
+        print val;
+        print " ";
+    }
 }
 
-println getNum(3);
+println "";
 
+fun fibFast(n) {
+    if(n < 0) return nil;
+
+    var fibNums = List();
+    fibNums.init();
+    fibNums.add(0);
+    fibNums.add(1);
+
+    for(var i = 2; i <= n; i = i + 1) {
+        fibNums.add(fibNums.get(i-1) + fibNums.get(i-2));
+    }
+
+    return fibNums.get(n);
+}
+
+println "";
+
+fun fibSlow(n) {
+    if(n < 0) return nil;
+    if(n <= 1) return n;
+    return fibSlow(n-1) + fibSlow(n-2);
+}
+
+var n = 0;
+
+var start = clock();
+for(var i = 0; i < 29; i = i + 1) {
+    print fibSlow(i);
+    print " ";
+}
+var stop = clock();
+
+println "";
+
+print (stop - start);
+println " seconds for the first one";
+println "";
+
+start = clock();
+for(var i = 0; i < 29; i = i + 1) {
+    print fibFast(i);
+    print " ";
+}
+
+println "";
+stop = clock();
+print (stop - start);
+println " seconds for the second one";
