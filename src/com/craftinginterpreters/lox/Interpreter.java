@@ -100,6 +100,9 @@ public class Interpreter implements Expr.Visitor<Object>,
                 return !isEqual(left, right);
             case EQUAL_EQUAL:
                 return  isEqual(left, right);
+            case RIGHT_SHIFT:
+                checkNumberOperands(expr.operator, left, right);
+                return (double)((int)(double) left >> (int)(double) right);
             case MINUS:
                 checkNumberOperands(expr.operator, left, right);
                 return (double)left - (double)right;

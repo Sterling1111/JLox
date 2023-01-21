@@ -83,7 +83,9 @@ public class Scanner {
                 addToken(match('=') ? LESS_EQUAL : LESS);
                 break;
             case '>':
-                addToken(match('=') ? GREATER_EQUAL : GREATER);
+                if(match('=')) addToken(GREATER_EQUAL);
+                else if(match('>')) addToken(RIGHT_SHIFT);
+                else addToken(match('=') ? GREATER_EQUAL : GREATER);
                 break;
             case '/':
                 if(match('/')) {

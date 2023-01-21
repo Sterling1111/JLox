@@ -92,9 +92,8 @@ fun fibSlow(n) {
 var n = 0;
 
 var start = clock();
-for(var i = 0; i < 29; i = i + 1) {
-    print fibSlow(i);
-    print " ";
+for(var i = 0; i < 31; i = i + 1) {
+    var fib = fibSlow(i);
 }
 var stop = clock();
 
@@ -105,12 +104,13 @@ println " seconds for the first one";
 println "";
 
 start = clock();
-for(var i = 0; i < 29; i = i + 1) {
-    print fibFast(i);
-    print " ";
+for(var i = 0; i < 300; i = i + 1) {
+    var fib = fibFast(i);
 }
 
 println "";
 stop = clock();
 print (stop - start);
 println " seconds for the second one";
+
+println 16 >> 1 >> 1;
